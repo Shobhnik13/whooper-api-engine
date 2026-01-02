@@ -12,11 +12,15 @@
   "license": "ISC",
   "description": "",
   "dependencies": {
+    "@types/pino": "^7.0.4",
+    "@types/sequelize": "^4.28.20",
     "express": "^5.2.1",
     "ioredis": "^5.8.2",
     "node-fetch": "^3.3.2",
     "path-to-regexp": "^8.3.0",
-    "pg": "^8.16.3"
+    "pg": "^8.16.3",
+    "pino": "^10.1.0",
+    "sequelize": "^6.37.7"
   },
   "devDependencies": {
     "@types/express": "^5.0.6",
