@@ -1,5 +1,6 @@
 import { RedisClient } from "../redis/client";
 
+// used in leader election and to prevent cache stampede
 export class singleFlight {
     constructor(private redis: RedisClient) { }
 

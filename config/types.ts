@@ -1,4 +1,9 @@
 import { MatchFunction } from "path-to-regexp";
+
+export interface InvalidationRule {
+    targetRouteId: string;
+}
+
 export interface RouteConfig {
     routeId: string;
     method: string;
@@ -9,4 +14,5 @@ export interface RouteConfig {
 
     authType: "none" | "jwt"
     cacheMode: "none" | "global"
+    invalidates: InvalidationRule[]
 }

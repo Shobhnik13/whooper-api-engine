@@ -1,13 +1,14 @@
 import { RedisClient } from "../redis/client";
 
 export class CacheService {
-    constructor(private redis: RedisClient) { }
+    constructor(private r: RedisClient) { }
 
-    get(key: string) {
-        return this.redis.get(key);
-    }
+    get(k: string) { return this.r.get(k); }
 
-    set(key: string, val: string, ttl: number) {
-        return this.redis.set(key, val, ttl);
+    set(k: string, v: string, ttl: number) { return this.r.set(k, v, ttl); }
+
+    async delByPrefix(prefix: string) {
+        const keys = await this.r.scanByPrefix(prefix);
+        await this.r.del(keys);
     }
 }
