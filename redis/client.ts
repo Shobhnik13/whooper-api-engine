@@ -18,7 +18,8 @@ export class RedisClient {
     del(keys: string[]) { return keys.length ? this.r.del(...keys) : 0; }
 
     async scanByPrefix(prefix: string): Promise<string[]> {
-        let cursor = "0"; const out: string[] = [];
+        let cursor = "0";
+        const out: string[] = [];
         do {
             const [c, keys] = await this.r.scan(cursor, "MATCH", `${prefix}*`, "COUNT", 100);
             cursor = c; out.push(...keys);

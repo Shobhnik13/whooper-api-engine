@@ -4,6 +4,12 @@ export interface InvalidationRule {
     targetRouteId: string;
 }
 
+export interface CacheValue {
+    current: string | null
+    prev: string | null
+    invalidated: boolean
+}
+
 export interface RouteConfig {
     routeId: string;
     method: string;

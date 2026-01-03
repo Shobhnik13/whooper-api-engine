@@ -1,7 +1,7 @@
 import { RedisClient } from "../redis/client";
 
 // used in leader election and to prevent cache stampede
-export class singleFlight {
+export class SingleFlight {
     constructor(private redis: RedisClient) { }
 
     acquireLock(key: string): Promise<boolean> {
