@@ -27,6 +27,10 @@ export class RedisClient {
         return out;
     }
 
+    ping() {
+        return this.r.ping();
+    }
+
     async setNX(key: string, val: string, ttl: number): Promise<boolean> {
         const res = await this.r.sendCommand(
             new Command("SET", [key, val, "NX", "EX", ttl.toString()])

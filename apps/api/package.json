@@ -1,0 +1,19 @@
+{
+  "name": "@whooper/api",
+  "version": "1.0.0",
+  "private": true,
+  "description": "API workspace for Whooper control-plane services.",
+  "license": "ISC",
+  "scripts": {
+    "build": "tsc",
+    "dev": "bun --watch server.ts",
+    "start": "bun dist/server.js"
+  },
+  "dependencies": {
+    "dotenv": "^17.2.3"
+  },
+  "devDependencies": {
+    "@types/node": "^25.0.3",
+    "typescript": "^5.9.3"
+  }
+}

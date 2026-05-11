@@ -1,0 +1,33 @@
+{
+  "name": "@whooper/engine",
+  "version": "1.0.0",
+  "main": "dist/server.js",
+  "scripts": {
+    "build": "tsc",
+    "dev": "bun --watch server.ts",
+    "start": "bun dist/server.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "Configurable API gateway and cache engine for Whooper.",
+  "dependencies": {
+    "@types/pino": "^7.0.4",
+    "drizzle-orm": "^0.45.0",
+    "crypto": "^1.0.1",
+    "dotenv": "^17.2.3",
+    "express": "^4.22.1",
+    "ioredis": "^5.8.2",
+    "node-fetch": "^3.3.2",
+    "path-to-regexp": "^8.3.0",
+    "pg": "^8.16.3",
+    "pino": "^10.1.0",
+    "pino-pretty": "^13.1.3"
+  },
+  "devDependencies": {
+    "@types/express": "^4.17.25",
+    "@types/node": "^25.0.3",
+    "@types/pg": "^8.16.0",
+    "typescript": "^5.9.3"
+  }
+}
