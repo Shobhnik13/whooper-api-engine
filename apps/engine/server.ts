@@ -57,6 +57,12 @@ const checkRedis = async () => {
     }
 }
 
+const registerHealthEndpoints = () => {
+    app.get("/health", (_req, res) => {
+        return res.status(200).send(`Engine is running on port ${process.env.ENGINE_PORT}`);
+    })
+}
+
 const interceptRequests = () => {
     app.all("/proxy/*", async (req, res) => {
         try {
@@ -82,10 +88,10 @@ const startServer = async () => {
     const port = process.env.ENGINE_PORT!;
 
     // db connection
-    await checkDb();
+    // await checkDb();
 
     // redis connection
-    await checkRedis();
+    // await checkRedis();
 
     // config load in memory 
     // listener that updates config on db listen 
@@ -97,6 +103,7 @@ const startServer = async () => {
     // TODO
 
     // intercepting requests
+    registerHealthEndpoints();
     interceptRequests();
 
     // start server

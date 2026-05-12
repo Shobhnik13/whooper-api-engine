@@ -37,4 +37,15 @@ export class RedisClient {
         );
         return res === "OK";
     }
+
+    async releaseLock(key: string, token: string): Promise<boolean> {
+        const script = `
+            if redis.call("GET", KEYS[1]) == ARGV[1] then
+                return redis.call("DEL", KEYS[1])
+            end
+            return 0
+        `;
+        const res = await this.r.eval(script, 1, key, token);
+        return res === 1;
+    }
 }
