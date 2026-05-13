@@ -1,0 +1,901 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Whooper · A modern API gateway</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; scroll-padding-top: 80px; }
+
+    :root {
+      --white: #ffffff;
+      --slate-50: #f8fafc;
+      --slate-100: #f1f5f9;
+      --slate-200: #e2e8f0;
+      --slate-300: #cbd5e1;
+      --slate-400: #94a3b8;
+      --slate-500: #64748b;
+      --slate-600: #475569;
+      --slate-700: #334155;
+      --slate-800: #1e293b;
+      --slate-900: #0f172a;
+      --black: #000000;
+    }
+
+    html, body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      color: var(--slate-900);
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      line-height: 1.5;
+      letter-spacing: -0.01em;
+    }
+
+    body {
+      min-height: 100vh;
+      position: relative;
+      overflow-x: hidden;
+      background-color: #fafbfc;
+      background-image:
+        linear-gradient(var(--slate-200) 1px, transparent 1px),
+        linear-gradient(90deg, var(--slate-200) 1px, transparent 1px);
+      background-size: 48px 48px;
+      background-position: -1px -1px;
+    }
+
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      background:
+        radial-gradient(ellipse 80% 50% at 50% -10%, rgba(15, 23, 42, 0.08), transparent 70%),
+        radial-gradient(ellipse 60% 40% at 100% 100%, rgba(100, 116, 139, 0.10), transparent 70%),
+        radial-gradient(ellipse 60% 40% at 0% 80%, rgba(148, 163, 184, 0.12), transparent 70%),
+        linear-gradient(180deg, rgba(255,255,255,0.6) 0%, rgba(255,255,255,0.0) 30%, rgba(255,255,255,0.85) 100%);
+      z-index: 0;
+    }
+
+    .wrap {
+      position: relative;
+      z-index: 1;
+      max-width: 1120px;
+      margin: 0 auto;
+      padding: 0 32px;
+    }
+
+    nav {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 28px 0;
+    }
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-weight: 700;
+      font-size: 18px;
+      letter-spacing: -0.02em;
+    }
+    .logo-mark {
+      width: 28px;
+      height: 28px;
+      border-radius: 8px;
+      background: linear-gradient(135deg, var(--slate-900), var(--slate-600));
+      display: grid;
+      place-items: center;
+      color: white;
+      font-size: 14px;
+      font-weight: 800;
+      box-shadow: 0 2px 8px rgba(15,23,42,0.15), inset 0 1px 0 rgba(255,255,255,0.2);
+    }
+    .nav-links {
+      display: flex;
+      gap: 32px;
+      list-style: none;
+    }
+    .nav-links a {
+      color: var(--slate-600);
+      text-decoration: none;
+      font-size: 14px;
+      font-weight: 500;
+      transition: color 0.15s ease;
+    }
+    .nav-links a:hover { color: var(--slate-900); }
+    .nav-cta {
+      padding: 8px 16px;
+      background: var(--slate-900);
+      color: white;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 500;
+      text-decoration: none;
+      transition: background 0.15s ease, transform 0.15s ease;
+    }
+    .nav-cta:hover { background: var(--black); transform: translateY(-1px); }
+
+    .nav-right { display: flex; align-items: center; gap: 10px; }
+    .gh-star {
+      display: inline-flex;
+      align-items: stretch;
+      border: 1px solid var(--slate-200);
+      border-radius: 8px;
+      overflow: hidden;
+      background: white;
+      font-size: 13px;
+      font-weight: 500;
+      text-decoration: none;
+      transition: all 0.15s ease;
+      box-shadow: 0 1px 0 rgba(15,23,42,0.04);
+    }
+    .gh-star:hover { border-color: var(--slate-300); transform: translateY(-1px); }
+    .gh-star-left {
+      display: flex; align-items: center; gap: 8px;
+      padding: 7px 12px;
+      color: var(--slate-800);
+      background: var(--slate-50);
+      border-right: 1px solid var(--slate-200);
+    }
+    .gh-star-right {
+      display: flex; align-items: center; gap: 6px;
+      padding: 7px 12px;
+      color: var(--slate-700);
+    }
+    .gh-star-right svg { color: var(--slate-700); }
+
+    .hero {
+      padding: 80px 0 100px;
+      text-align: center;
+    }
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 14px;
+      background: rgba(255,255,255,0.7);
+      backdrop-filter: blur(8px);
+      border: 1px solid var(--slate-200);
+      border-radius: 100px;
+      font-size: 13px;
+      color: var(--slate-600);
+      font-weight: 500;
+      margin-bottom: 28px;
+    }
+    .pill .dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--slate-700);
+      box-shadow: 0 0 0 3px rgba(51, 65, 85, 0.15);
+    }
+
+    h1 {
+      font-size: clamp(40px, 6vw, 72px);
+      font-weight: 700;
+      letter-spacing: -0.04em;
+      line-height: 1.05;
+      color: var(--slate-900);
+      margin-bottom: 24px;
+    }
+    h1 .grad {
+      background: linear-gradient(135deg, var(--slate-900) 0%, var(--slate-500) 60%, var(--slate-400) 100%);
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .lede {
+      max-width: 620px;
+      margin: 0 auto 40px;
+      font-size: 19px;
+      color: var(--slate-600);
+      line-height: 1.55;
+    }
+
+    .cta-row {
+      display: flex;
+      gap: 12px;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 13px 22px;
+      border-radius: 10px;
+      font-size: 15px;
+      font-weight: 500;
+      text-decoration: none;
+      transition: all 0.2s ease;
+      border: 1px solid transparent;
+    }
+    .btn-primary {
+      background: var(--slate-900);
+      color: white;
+      box-shadow: 0 4px 14px rgba(15,23,42,0.18), inset 0 1px 0 rgba(255,255,255,0.1);
+    }
+    .btn-primary:hover {
+      background: var(--black);
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px rgba(15,23,42,0.25), inset 0 1px 0 rgba(255,255,255,0.1);
+    }
+    .btn-ghost {
+      background: rgba(255,255,255,0.7);
+      backdrop-filter: blur(8px);
+      color: var(--slate-800);
+      border-color: var(--slate-200);
+    }
+    .btn-ghost:hover {
+      background: white;
+      border-color: var(--slate-300);
+      transform: translateY(-2px);
+    }
+
+    .preview {
+      margin: 80px auto 0;
+      max-width: 760px;
+      background: white;
+      border: 1px solid var(--slate-200);
+      border-radius: 16px;
+      overflow: hidden;
+      box-shadow:
+        0 1px 0 rgba(255,255,255,1) inset,
+        0 10px 40px -10px rgba(15,23,42,0.15),
+        0 30px 60px -30px rgba(15,23,42,0.20);
+    }
+    .preview-bar {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 12px 16px;
+      background: var(--slate-50);
+      border-bottom: 1px solid var(--slate-200);
+    }
+    .preview-bar .d {
+      width: 11px;
+      height: 11px;
+      border-radius: 50%;
+      background: var(--slate-300);
+    }
+    .preview-bar .title {
+      flex: 1;
+      text-align: center;
+      font-size: 12px;
+      color: var(--slate-500);
+      font-family: 'JetBrains Mono', monospace;
+    }
+    .preview pre {
+      padding: 24px 28px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 13.5px;
+      line-height: 1.7;
+      color: var(--slate-800);
+      text-align: left;
+      overflow-x: auto;
+    }
+    .preview .k { color: var(--slate-500); }
+    .preview .s { color: var(--slate-900); font-weight: 500; }
+    .preview .c { color: var(--slate-400); font-style: italic; }
+
+    .features {
+      padding: 60px 0 120px;
+    }
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 20px;
+    }
+    .card {
+      background: rgba(255,255,255,0.7);
+      backdrop-filter: blur(10px);
+      border: 1px solid var(--slate-200);
+      border-radius: 14px;
+      padding: 28px;
+      transition: all 0.2s ease;
+    }
+    .card:hover {
+      transform: translateY(-3px);
+      border-color: var(--slate-300);
+      box-shadow: 0 10px 30px -10px rgba(15,23,42,0.12);
+      background: white;
+    }
+    .card-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: 10px;
+      background: linear-gradient(135deg, var(--slate-100), var(--slate-200));
+      border: 1px solid var(--slate-200);
+      display: grid;
+      place-items: center;
+      margin-bottom: 18px;
+      color: var(--slate-700);
+    }
+    .card h3 {
+      font-size: 16px;
+      font-weight: 600;
+      margin-bottom: 8px;
+      color: var(--slate-900);
+      letter-spacing: -0.01em;
+    }
+    .card p {
+      font-size: 14px;
+      color: var(--slate-600);
+      line-height: 1.55;
+    }
+
+    /* Section heading */
+    .section-head {
+      text-align: center;
+      max-width: 640px;
+      margin: 0 auto 56px;
+    }
+    .section-tag {
+      display: inline-block;
+      font-size: 12px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: var(--slate-500);
+      margin-bottom: 14px;
+    }
+    .section-head h2 {
+      font-size: clamp(28px, 4vw, 42px);
+      font-weight: 700;
+      letter-spacing: -0.03em;
+      line-height: 1.15;
+      color: var(--slate-900);
+      margin-bottom: 14px;
+    }
+    .section-head p {
+      font-size: 17px;
+      color: var(--slate-600);
+      line-height: 1.55;
+    }
+
+    /* Why */
+    .why { padding: 60px 0 100px; }
+    .why-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 60px;
+      align-items: center;
+    }
+    .why-list { list-style: none; display: flex; flex-direction: column; gap: 22px; }
+    .why-item { display: flex; gap: 16px; }
+    .why-check {
+      flex-shrink: 0;
+      width: 28px; height: 28px;
+      border-radius: 8px;
+      background: linear-gradient(135deg, var(--slate-900), var(--slate-700));
+      color: white;
+      display: grid; place-items: center;
+      box-shadow: 0 2px 8px rgba(15,23,42,0.18);
+    }
+    .why-item h4 {
+      font-size: 16px; font-weight: 600;
+      color: var(--slate-900); margin-bottom: 4px;
+      letter-spacing: -0.01em;
+    }
+    .why-item p { font-size: 14.5px; color: var(--slate-600); line-height: 1.55; }
+
+    .arch {
+      background: white;
+      border: 1px solid var(--slate-200);
+      border-radius: 16px;
+      padding: 32px;
+      box-shadow: 0 10px 40px -10px rgba(15,23,42,0.10);
+    }
+    .arch-row {
+      display: flex; align-items: center; justify-content: space-between;
+      gap: 12px;
+    }
+    .arch-node {
+      flex: 1;
+      padding: 14px 10px;
+      border-radius: 10px;
+      background: var(--slate-50);
+      border: 1px solid var(--slate-200);
+      text-align: center;
+      font-size: 12.5px;
+      font-weight: 600;
+      color: var(--slate-700);
+    }
+    .arch-node.primary {
+      background: linear-gradient(135deg, var(--slate-900), var(--slate-700));
+      color: white;
+      border-color: var(--slate-800);
+      box-shadow: 0 4px 14px rgba(15,23,42,0.20);
+    }
+    .arch-arrow {
+      color: var(--slate-400);
+      flex-shrink: 0;
+    }
+    .arch-stack {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-top: 14px;
+    }
+    .arch-stack .arch-node { padding: 10px; font-size: 11.5px; }
+
+    /* How it works */
+    .how { padding: 60px 0 100px; }
+    .steps {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+      position: relative;
+    }
+    .step {
+      background: rgba(255,255,255,0.7);
+      backdrop-filter: blur(10px);
+      border: 1px solid var(--slate-200);
+      border-radius: 14px;
+      padding: 24px 22px;
+      position: relative;
+    }
+    .step-num {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      color: var(--slate-400);
+      font-weight: 500;
+      margin-bottom: 14px;
+    }
+    .step h4 {
+      font-size: 15px; font-weight: 600;
+      color: var(--slate-900); margin-bottom: 6px;
+      letter-spacing: -0.01em;
+    }
+    .step p { font-size: 13.5px; color: var(--slate-600); line-height: 1.55; }
+
+    /* Config */
+    .config { padding: 60px 0 100px; }
+    .config-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 40px;
+      align-items: center;
+    }
+    .config-text h2 {
+      font-size: clamp(26px, 3.5vw, 38px);
+      font-weight: 700;
+      letter-spacing: -0.03em;
+      line-height: 1.15;
+      color: var(--slate-900);
+      margin-bottom: 14px;
+    }
+    .config-text p {
+      font-size: 16px;
+      color: var(--slate-600);
+      line-height: 1.6;
+      margin-bottom: 14px;
+    }
+    .config-bullets {
+      list-style: none;
+      display: flex; flex-direction: column; gap: 10px;
+      margin-top: 18px;
+    }
+    .config-bullets li {
+      display: flex; align-items: center; gap: 10px;
+      font-size: 14.5px;
+      color: var(--slate-700);
+    }
+    .config-bullets li::before {
+      content: "";
+      width: 5px; height: 5px;
+      border-radius: 50%;
+      background: var(--slate-700);
+    }
+
+    .code-block {
+      background: var(--slate-900);
+      border: 1px solid var(--slate-800);
+      border-radius: 14px;
+      overflow: hidden;
+      box-shadow: 0 20px 60px -20px rgba(15,23,42,0.40);
+    }
+    .code-bar {
+      padding: 12px 16px;
+      background: #0b1220;
+      border-bottom: 1px solid var(--slate-800);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      color: var(--slate-400);
+      display: flex; align-items: center; gap: 10px;
+    }
+    .code-bar .d { width: 10px; height: 10px; border-radius: 50%; background: var(--slate-700); }
+    .code-block pre {
+      padding: 22px 24px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 13px;
+      line-height: 1.7;
+      color: var(--slate-200);
+      overflow-x: auto;
+    }
+    .code-block .ck { color: var(--slate-400); }
+    .code-block .cs { color: #e2e8f0; }
+    .code-block .cv { color: white; font-weight: 500; }
+    .code-block .cc { color: var(--slate-500); font-style: italic; }
+
+    /* Stats */
+    .stats { padding: 40px 0 100px; }
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 0;
+      background: white;
+      border: 1px solid var(--slate-200);
+      border-radius: 16px;
+      overflow: hidden;
+      box-shadow: 0 10px 40px -10px rgba(15,23,42,0.08);
+    }
+    .stat {
+      padding: 32px 24px;
+      text-align: center;
+      border-right: 1px solid var(--slate-200);
+    }
+    .stat:last-child { border-right: 0; }
+    .stat-value {
+      font-size: 36px;
+      font-weight: 700;
+      letter-spacing: -0.03em;
+      color: var(--slate-900);
+      margin-bottom: 6px;
+      background: linear-gradient(135deg, var(--slate-900), var(--slate-500));
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .stat-label { font-size: 13px; color: var(--slate-500); font-weight: 500; }
+
+    /* Use cases */
+    .usecases { padding: 60px 0 100px; }
+    .usecase-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 20px;
+    }
+    .usecase {
+      background: white;
+      border: 1px solid var(--slate-200);
+      border-radius: 14px;
+      padding: 28px;
+      transition: all 0.2s ease;
+    }
+    .usecase:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 10px 30px -10px rgba(15,23,42,0.12);
+      border-color: var(--slate-300);
+    }
+    .usecase-icon {
+      width: 44px; height: 44px;
+      border-radius: 10px;
+      background: var(--slate-900);
+      color: white;
+      display: grid; place-items: center;
+      margin-bottom: 16px;
+      box-shadow: 0 4px 12px rgba(15,23,42,0.18);
+    }
+    .usecase h4 {
+      font-size: 16px; font-weight: 600;
+      color: var(--slate-900); margin-bottom: 8px;
+      letter-spacing: -0.01em;
+    }
+    .usecase p { font-size: 14px; color: var(--slate-600); line-height: 1.55; }
+
+    /* FAQ */
+    .faq { padding: 60px 0 100px; }
+    .faq-list {
+      max-width: 780px;
+      margin: 0 auto;
+      display: flex; flex-direction: column; gap: 12px;
+    }
+    .faq-item {
+      background: white;
+      border: 1px solid var(--slate-200);
+      border-radius: 12px;
+      padding: 22px 26px;
+      transition: all 0.2s ease;
+    }
+    .faq-item:hover { border-color: var(--slate-300); }
+    .faq-item h4 {
+      font-size: 15.5px; font-weight: 600;
+      color: var(--slate-900); margin-bottom: 8px;
+      letter-spacing: -0.01em;
+    }
+    .faq-item p { font-size: 14.5px; color: var(--slate-600); line-height: 1.6; }
+
+    /* CTA */
+    .cta-section {
+      padding: 40px 0 100px;
+    }
+    .cta-box {
+      background: linear-gradient(135deg, var(--slate-900) 0%, var(--slate-800) 100%);
+      border-radius: 20px;
+      padding: 56px 40px;
+      text-align: center;
+      color: white;
+      position: relative;
+      overflow: hidden;
+      box-shadow: 0 30px 80px -20px rgba(15,23,42,0.40);
+    }
+    .cta-box::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background:
+        radial-gradient(ellipse 60% 50% at 20% 0%, rgba(255,255,255,0.10), transparent 70%),
+        radial-gradient(ellipse 60% 50% at 100% 100%, rgba(255,255,255,0.06), transparent 70%);
+      pointer-events: none;
+    }
+    .cta-box h2 {
+      position: relative;
+      font-size: clamp(28px, 4vw, 40px);
+      font-weight: 700;
+      letter-spacing: -0.03em;
+      margin-bottom: 14px;
+    }
+    .cta-box p {
+      position: relative;
+      font-size: 17px;
+      color: var(--slate-300);
+      margin-bottom: 28px;
+      max-width: 520px;
+      margin-left: auto; margin-right: auto;
+    }
+    .cta-box .btn-primary {
+      background: white;
+      color: var(--slate-900);
+      position: relative;
+    }
+    .cta-box .btn-primary:hover { background: var(--slate-100); }
+    .cta-box .btn-ghost {
+      position: relative;
+      background: transparent;
+      color: white;
+      border-color: rgba(255,255,255,0.20);
+    }
+    .cta-box .btn-ghost:hover {
+      background: rgba(255,255,255,0.08);
+      border-color: rgba(255,255,255,0.35);
+    }
+
+    footer {
+      border-top: 1px solid var(--slate-200);
+      padding: 32px 0;
+      text-align: center;
+      font-size: 13px;
+      color: var(--slate-500);
+      background: rgba(255,255,255,0.5);
+      backdrop-filter: blur(6px);
+      position: relative;
+      z-index: 1;
+    }
+
+    @media (max-width: 860px) {
+      .features-grid,
+      .usecase-grid,
+      .why-grid,
+      .config-grid,
+      .stats-grid { grid-template-columns: 1fr; }
+      .steps { grid-template-columns: repeat(2, 1fr); }
+      .stat { border-right: 0; border-bottom: 1px solid var(--slate-200); }
+      .stat:last-child { border-bottom: 0; }
+      .nav-links { display: none; }
+      .hero { padding: 48px 0 60px; }
+      .why, .how, .config, .usecases, .faq { padding: 40px 0 60px; }
+      .cta-box { padding: 40px 24px; }
+    }
+    @media (max-width: 520px) {
+      .steps { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <nav>
+      <div class="logo">
+        <div class="logo-mark">W</div>
+        <span>Whooper</span>
+      </div>
+      <ul class="nav-links">
+        <li><a href="#features">Features</a></li>
+        <li><a href="#architecture">Architecture</a></li>
+        <li><a href="#how">How it works</a></li>
+        <li><a href="https://github.com/shobhnik13/whooper#readme" target="_blank" rel="noopener">Docs</a></li>
+      </ul>
+      <div class="nav-right">
+        <a href="https://github.com/shobhnik13/whooper" class="gh-star" target="_blank" rel="noopener">
+          <span class="gh-star-left">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 .5C5.65.5.5 5.65.5 12c0 5.08 3.29 9.39 7.86 10.91.58.1.79-.25.79-.56v-2c-3.2.69-3.87-1.54-3.87-1.54-.52-1.33-1.28-1.69-1.28-1.69-1.04-.71.08-.7.08-.7 1.16.08 1.77 1.19 1.77 1.19 1.03 1.76 2.7 1.25 3.36.95.1-.75.4-1.25.73-1.54-2.55-.29-5.24-1.28-5.24-5.69 0-1.26.45-2.29 1.18-3.1-.12-.29-.51-1.46.11-3.04 0 0 .97-.31 3.18 1.18a11 11 0 015.79 0c2.2-1.49 3.17-1.18 3.17-1.18.62 1.58.23 2.75.11 3.04.74.81 1.18 1.84 1.18 3.1 0 4.42-2.69 5.39-5.25 5.68.41.36.78 1.05.78 2.12v3.14c0 .31.21.67.8.56C20.21 21.39 23.5 17.08 23.5 12 23.5 5.65 18.35.5 12 .5z"/></svg>
+            GitHub
+          </span>
+          <span class="gh-star-right">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+            Star
+          </span>
+        </a>
+        <a href="https://github.com/shobhnik13/whooper" class="nav-cta" target="_blank" rel="noopener">Get started</a>
+      </div>
+    </nav>
+
+    <section class="hero">
+      <div class="pill">
+        <span class="dot"></span>
+        <span>Open source · Self-hostable · MIT licensed</span>
+      </div>
+      <h1>
+        The API gateway<br>
+        <span class="grad">built for speed.</span>
+      </h1>
+      <p class="lede">
+        Whooper is an open-source API gateway that sits in front of your services and makes them faster.
+        It proxies your requests, caches responses in Redis, and invalidates them on writes, so your app feels instant without you writing a single line of cache code.
+      </p>
+      <div class="cta-row">
+        <a href="https://github.com/shobhnik13/whooper" target="_blank" rel="noopener" class="btn btn-primary">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 .5C5.65.5.5 5.65.5 12c0 5.08 3.29 9.39 7.86 10.91.58.1.79-.25.79-.56v-2c-3.2.69-3.87-1.54-3.87-1.54-.52-1.33-1.28-1.69-1.28-1.69-1.04-.71.08-.7.08-.7 1.16.08 1.77 1.19 1.77 1.19 1.03 1.76 2.7 1.25 3.36.95.1-.75.4-1.25.73-1.54-2.55-.29-5.24-1.28-5.24-5.69 0-1.26.45-2.29 1.18-3.1-.12-.29-.51-1.46.11-3.04 0 0 .97-.31 3.18 1.18a11 11 0 015.79 0c2.2-1.49 3.17-1.18 3.17-1.18.62 1.58.23 2.75.11 3.04.74.81 1.18 1.84 1.18 3.1 0 4.42-2.69 5.39-5.25 5.68.41.36.78 1.05.78 2.12v3.14c0 .31.21.67.8.56C20.21 21.39 23.5 17.08 23.5 12 23.5 5.65 18.35.5 12 .5z"/></svg>
+          Star on GitHub
+        </a>
+        <a href="#how" class="btn btn-ghost">See how it works</a>
+      </div>
+
+      <div class="preview">
+        <div class="preview-bar">
+          <div class="d"></div><div class="d"></div><div class="d"></div>
+          <div class="title">~/whooper · proxy</div>
+        </div>
+<pre><span class="c"># Forward any request through Whooper</span>
+<span class="k">$</span> curl http://localhost:3000/proxy/api/users
+<span class="c">→ cached in Redis · 4ms · 200 OK</span>
+
+<span class="k">$</span> curl http://localhost:3000/proxy/api/orders
+<span class="c">→ upstream fetch · 124ms · 200 OK · stored</span></pre>
+      </div>
+    </section>
+
+    <section class="features" id="features">
+      <div class="features-grid">
+        <div class="card">
+          <div class="card-icon">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+          </div>
+          <h3>Smart caching</h3>
+          <p>Redis-backed response cache with per-route TTLs and automatic invalidation hooks.</p>
+        </div>
+        <div class="card">
+          <div class="card-icon">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M2 12h20"/><path d="M12 2a15 15 0 010 20M12 2a15 15 0 000 20"/></svg>
+          </div>
+          <h3>Zero-config proxy</h3>
+          <p>Point Whooper at any upstream. Routes, headers, and bodies are forwarded transparently.</p>
+        </div>
+        <div class="card">
+          <div class="card-icon">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M3 12h18M3 18h18"/></svg>
+          </div>
+          <h3>Tag-based invalidation</h3>
+          <p>Bust related cache entries on writes with simple tags, so no stale data sneaks through your gateway.</p>
+        </div>
+      </div>
+    </section>
+    <section class="why" id="architecture">
+      <div class="section-head">
+        <span class="section-tag">Architecture</span>
+        <h2>One service. Three jobs. Zero magic.</h2>
+        <p>Whooper sits between your clients and your APIs. Redis holds the cache and the engine handles routing, proxying, and invalidation. Components you already understand.</p>
+      </div>
+      <div class="why-grid">
+        <ul class="why-list">
+          <li class="why-item">
+            <div class="why-check">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+            </div>
+            <div>
+              <h4>Self-hosted, no lock-in</h4>
+              <p>Run Whooper on your own VPS, Kubernetes cluster, or laptop. Your traffic never leaves your infrastructure.</p>
+            </div>
+          </li>
+          <li class="why-item">
+            <div class="why-check">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+            </div>
+            <div>
+              <h4>Cache that actually invalidates</h4>
+              <p>Tag-based invalidation lets you bust related cache entries on writes, so no stale data lives behind your gateway.</p>
+            </div>
+          </li>
+          <li class="why-item">
+            <div class="why-check">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+            </div>
+            <div>
+              <h4>MIT licensed, forever free</h4>
+              <p>Fork it, modify it, embed it. No enterprise tier locks features behind a paywall.</p>
+            </div>
+          </li>
+        </ul>
+        <div class="arch">
+          <div class="arch-row">
+            <div class="arch-node">Client</div>
+            <div class="arch-arrow">
+              <svg width="20" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+            </div>
+            <div class="arch-node primary">Whooper</div>
+            <div class="arch-arrow">
+              <svg width="20" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+            </div>
+            <div class="arch-node">Upstream API</div>
+          </div>
+          <div class="arch-stack" style="grid-template-columns: 1fr;">
+            <div class="arch-node">Redis · cache layer</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="how" id="how">
+      <div class="section-head">
+        <span class="section-tag">How it works</span>
+        <h2>Drop it in front of any API.</h2>
+        <p>Four steps from clone to production. No SDKs to install, no client libraries to upgrade. Just point requests at Whooper.</p>
+      </div>
+      <div class="steps">
+        <div class="step">
+          <div class="step-num">01</div>
+          <h4>Clone & boot</h4>
+          <p>Spin up the engine with Bun. It connects to Redis on startup. That's the whole runtime.</p>
+        </div>
+        <div class="step">
+          <div class="step-num">02</div>
+          <h4>Define routes</h4>
+          <p>Map upstream services to paths via the config or management API.</p>
+        </div>
+        <div class="step">
+          <div class="step-num">03</div>
+          <h4>Send traffic</h4>
+          <p>Point clients at <code>/proxy/*</code>. Whooper forwards, caches, and logs every request.</p>
+        </div>
+        <div class="step">
+          <div class="step-num">04</div>
+          <h4>Invalidate on writes</h4>
+          <p>Bust cache by tag, tune TTLs, and tweak routes live. No restarts required.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="cta-section" id="start">
+      <div class="cta-box">
+        <h2>Ready to self-host your gateway?</h2>
+        <p>Clone the repo, follow the quickstart, and have Whooper proxying live traffic in under five minutes.</p>
+        <div class="cta-row">
+          <a href="https://github.com/shobhnik13/whooper" target="_blank" rel="noopener" class="btn btn-primary">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 .5C5.65.5.5 5.65.5 12c0 5.08 3.29 9.39 7.86 10.91.58.1.79-.25.79-.56v-2c-3.2.69-3.87-1.54-3.87-1.54-.52-1.33-1.28-1.69-1.28-1.69-1.04-.71.08-.7.08-.7 1.16.08 1.77 1.19 1.77 1.19 1.03 1.76 2.7 1.25 3.36.95.1-.75.4-1.25.73-1.54-2.55-.29-5.24-1.28-5.24-5.69 0-1.26.45-2.29 1.18-3.1-.12-.29-.51-1.46.11-3.04 0 0 .97-.31 3.18 1.18a11 11 0 015.79 0c2.2-1.49 3.17-1.18 3.17-1.18.62 1.58.23 2.75.11 3.04.74.81 1.18 1.84 1.18 3.1 0 4.42-2.69 5.39-5.25 5.68.41.36.78 1.05.78 2.12v3.14c0 .31.21.67.8.56C20.21 21.39 23.5 17.08 23.5 12 23.5 5.65 18.35.5 12 .5z"/></svg>
+            View on GitHub
+          </a>
+          <a href="https://github.com/shobhnik13/whooper/blob/main/CONTRIBUTING.md" target="_blank" rel="noopener" class="btn btn-ghost">Contributing guide</a>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <footer>
+    <div class="wrap">
+      <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:12px;">
+        <span>© 2026 Whooper · Open-source, self-hostable, MIT licensed</span>
+        <span style="display:flex; gap:18px;">
+          <a href="https://github.com/shobhnik13/whooper" target="_blank" rel="noopener" style="color:var(--slate-600); text-decoration:none;">GitHub</a>
+          <a href="https://github.com/shobhnik13/whooper#readme" target="_blank" rel="noopener" style="color:var(--slate-600); text-decoration:none;">Docs</a>
+          <a href="https://github.com/shobhnik13/whooper/blob/main/CONTRIBUTING.md" target="_blank" rel="noopener" style="color:var(--slate-600); text-decoration:none;">Contributing</a>
+        </span>
+      </div>
+    </div>
+  </footer>
+</body>
+</html>
